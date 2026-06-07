@@ -1,7 +1,89 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    const updateDashboard = async () =>{
-      console.log("Dashboard actualizado")  
+
+        // ── Dashboard render ──────────────────────────────────────────────────────
+    const updateDashboard = async () => {
+        const [transactions, recurring] = await Promise.all([
+            AppDB.getTransactions(),
+            AppDB.getRecurring(),
+        ]);
+
+        await updateBudgetUI(transactions, recurring);
+
+        const period        = periodFilter?.value || 'current';
+        const selectedMonth = monthPicker?.value  || '';
+        const { income, expense, balance, filtered, recurringExpense } =
+            calculateFinancials(transactions, recurring, period, selectedMonth);
+
+        // Stats cards
+        document.getElementById('total-income').textContent  = UI.formatMoney(income);
+        document.getElementById('total-expense').textContent = UI.formatMoney(expense);
+        document.getElementById('total-balance').textContent = UI.formatMoney(balance);
+
+        // ── Recent activity (transactions + recurring this month) ──────────────
+        const now = new Date();
+        const currentMonthStr = now.toISOString().slice(0, 7);
+        const recentList = document.getElementById('recent-list');
+        if (recentList) {
+            // 5 latest real transactions
+            const sortedTx = [...transactions]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+
+            // Active recurring of this month as pseudo-entries
+            const activeRec = recurring.filter(r => r.active);
+            const recEntries = [];
+            activeRec.forEach(r => {
+                const amount = Number(r.amount);
+                const start  = new Date((r.start_date || r.startDate) + 'T00:00:00');
+                const target = new Date(currentMonthStr + '-01T00:00:00');
+                let applies = false;
+                if (r.type === 'subscription') {
+                    const startMonth = new Date(start.getFullYear(), start.getMonth(), 1);
+                    applies = target >= startMonth;
+                } else if (r.type === 'quota') {
+                    const diff = (target.getFullYear() - start.getFullYear()) * 12
+                               + (target.getMonth()    - start.getMonth());
+                    applies = diff >= 0 && diff < (parseInt(r.quotas) || 0);
+                }
+                if (applies) {
+                    recEntries.push({
+                        detail: r.name,
+                        date:   currentMonthStr + '-01',
+                        amount,
+                        type:   'expense',
+                        category: r.type === 'subscription' ? 'Suscripción' : 'Cuota',
+                        isRecurring: true,
+                    });
+                }
+            });
+
+            const allRecent = [...sortedTx, ...recEntries]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 7);
+
+            if (!allRecent.length) {
+                recentList.innerHTML = '<p style="text-align:center;color:var(--text-muted);font-style:italic;padding:1rem;">No hay movimientos recientes</p>';
+            } else {
+                recentList.innerHTML = allRecent.map(t => `
+                    <div class="transaction-item">
+                        <div class="item-details">
+                            <span class="detail">
+                                ${t.isRecurring ? '<i class="fas fa-redo" style="font-size:0.75rem;opacity:0.6;margin-right:4px;"></i>' : ''}
+                                ${t.detail}
+                            </span>
+                            <span class="date">${t.date} · ${t.category || 'General'}</span>
+                        </div>
+                        <span class="item-amount ${t.type === 'income' ? 'amount-income' : 'amount-expense'}">
+                            ${t.type === 'income' ? '+' : '-'}${UI.formatMoney(t.amount)}
+                        </span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        updateCharts(filtered, transactions, recurring, period, selectedMonth);
     };
+    
     await Auth.protect();
     UIController.applyTheme(AppDB.getTheme());
 
@@ -275,90 +357,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             filtered,
             recurringExpense,
         };
-    };
-
-    // ── Dashboard render ──────────────────────────────────────────────────────
-    const updateDashboard = async () => {
-        const [transactions, recurring] = await Promise.all([
-            AppDB.getTransactions(),
-            AppDB.getRecurring(),
-        ]);
-
-        await updateBudgetUI(transactions, recurring);
-
-        const period        = periodFilter?.value || 'current';
-        const selectedMonth = monthPicker?.value  || '';
-        const { income, expense, balance, filtered, recurringExpense } =
-            calculateFinancials(transactions, recurring, period, selectedMonth);
-
-        // Stats cards
-        document.getElementById('total-income').textContent  = UI.formatMoney(income);
-        document.getElementById('total-expense').textContent = UI.formatMoney(expense);
-        document.getElementById('total-balance').textContent = UI.formatMoney(balance);
-
-        // ── Recent activity (transactions + recurring this month) ──────────────
-        const now = new Date();
-        const currentMonthStr = now.toISOString().slice(0, 7);
-        const recentList = document.getElementById('recent-list');
-        if (recentList) {
-            // 5 latest real transactions
-            const sortedTx = [...transactions]
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .slice(0, 5);
-
-            // Active recurring of this month as pseudo-entries
-            const activeRec = recurring.filter(r => r.active);
-            const recEntries = [];
-            activeRec.forEach(r => {
-                const amount = Number(r.amount);
-                const start  = new Date((r.start_date || r.startDate) + 'T00:00:00');
-                const target = new Date(currentMonthStr + '-01T00:00:00');
-                let applies = false;
-                if (r.type === 'subscription') {
-                    const startMonth = new Date(start.getFullYear(), start.getMonth(), 1);
-                    applies = target >= startMonth;
-                } else if (r.type === 'quota') {
-                    const diff = (target.getFullYear() - start.getFullYear()) * 12
-                               + (target.getMonth()    - start.getMonth());
-                    applies = diff >= 0 && diff < (parseInt(r.quotas) || 0);
-                }
-                if (applies) {
-                    recEntries.push({
-                        detail: r.name,
-                        date:   currentMonthStr + '-01',
-                        amount,
-                        type:   'expense',
-                        category: r.type === 'subscription' ? 'Suscripción' : 'Cuota',
-                        isRecurring: true,
-                    });
-                }
-            });
-
-            const allRecent = [...sortedTx, ...recEntries]
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .slice(0, 7);
-
-            if (!allRecent.length) {
-                recentList.innerHTML = '<p style="text-align:center;color:var(--text-muted);font-style:italic;padding:1rem;">No hay movimientos recientes</p>';
-            } else {
-                recentList.innerHTML = allRecent.map(t => `
-                    <div class="transaction-item">
-                        <div class="item-details">
-                            <span class="detail">
-                                ${t.isRecurring ? '<i class="fas fa-redo" style="font-size:0.75rem;opacity:0.6;margin-right:4px;"></i>' : ''}
-                                ${t.detail}
-                            </span>
-                            <span class="date">${t.date} · ${t.category || 'General'}</span>
-                        </div>
-                        <span class="item-amount ${t.type === 'income' ? 'amount-income' : 'amount-expense'}">
-                            ${t.type === 'income' ? '+' : '-'}${UI.formatMoney(t.amount)}
-                        </span>
-                    </div>
-                `).join('');
-            }
-        }
-
-        updateCharts(filtered, transactions, recurring, period, selectedMonth);
     };
 
     // ── Charts ────────────────────────────────────────────────────────────────
