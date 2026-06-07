@@ -179,7 +179,7 @@ body { background-color: var(--bg-color); color: var(--text-main); transition: v
 
 /* ── Main wrapper & container ─────────────────────────────────────────────── */
 .main-wrapper { margin-left: var(--sidebar-width); min-height: 100vh; }
-.container { padding: 2rem; max-width: 1200; }
+.container { padding: 2rem; max-width: 1200px; }
 
 /* ── Dashboard header ─────────────────────────────────────────────────────── */
 .dashboard-header, .history-header {
@@ -559,4 +559,112 @@ select:focus, input:focus { outline: none; border-color: var(--primary-color); b
     .login-card { padding: 1.75rem 1.25rem; }
     .finance-table th:nth-child(3),
     .finance-table td:nth-child(3) { display: none; }
+}
+
+/* ── Amount input: hide native spinners ───────────────────────────────────── */
+input[type="number"].no-spinner::-webkit-inner-spin-button,
+input[type="number"].no-spinner::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"].no-spinner { -moz-appearance: textfield; }
+
+/* ── Calculator input wrapper ─────────────────────────────────────────────── */
+.calc-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.calc-input-wrap input[type="number"] {
+    flex: 1;
+    padding-right: 2.5rem; /* space for icon */
+}
+.calc-trigger {
+    position: absolute;
+    right: 0.6rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 1rem;
+    padding: 0.25rem;
+    line-height: 1;
+    transition: var(--transition);
+    z-index: 1;
+}
+.calc-trigger:hover { color: var(--primary-color); }
+
+/* ── Calculator panel ─────────────────────────────────────────────────────── */
+.calc-panel {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 0.75rem;
+    z-index: 4000;
+    width: min(260px, 90vw);
+    animation: modal-in 0.15s ease;
+}
+.calc-panel.open { display: block; }
+
+.calc-display {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    text-align: right;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.6rem;
+    min-height: 2.5rem;
+    word-break: break-all;
+    overflow: hidden;
+}
+
+.calc-keys {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+}
+.calc-key {
+    padding: 0.6rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    transition: var(--transition);
+    touch-action: manipulation;
+}
+.calc-key:hover   { filter: brightness(0.92); }
+.calc-key:active  { transform: scale(0.94); }
+.calc-key.calc-op { background-color: var(--primary-light); color: white; }
+.calc-key.calc-fn { background-color: var(--border-color); color: var(--text-main); }
+.calc-key.calc-eq { background-color: var(--primary-color); color: white; }
+.calc-key.calc-zero { grid-column: span 2; text-align: left; padding-left: 1rem; }
+
+.calc-use {
+    width: 100%;
+    padding: 0.55rem;
+    background-color: var(--income-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.88rem;
+    transition: var(--transition);
+}
+.calc-use:hover { filter: brightness(0.9); }
+
+/* ── Stat card amount font tweak for long numbers ─────────────────────────── */
+.stat-info h3 {
+    font-size: clamp(1.1rem, 3vw, 1.7rem);
+    word-break: break-all;
 }
