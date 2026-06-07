@@ -8,28 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
+<body data-page="history">
 
-<aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <h1 class="logo">Finanzas<span>Pro</span></h1>
-        <button id="close-sidebar" class="btn-icon mobile-only"><i class="fas fa-times"></i></button>
-    </div>
-    <nav class="sidebar-nav">
-        <ul>
-            <li><a href="index.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-            <li><a href="history.html" class="active"><i class="fas fa-history"></i> Historial</a></li>
-            <li><a href="recurring.html"><i class="fas fa-redo"></i> Recurrentes</a></li>
-        </ul>
-    </nav>
-    <div class="sidebar-footer">
-        <button id="theme-toggle" class="btn-theme"><i class="fas fa-moon"></i> <span>Modo Oscuro</span></button>
-        <button id="btn-logout" class="btn-theme" style="background-color: var(--expense-color); opacity: 0.9;">
-            <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
-        </button>
-        <a href="recurring.html" class="btn-primary-small"><i class="fas fa-plus-circle"></i> Suscripciones/Cuotas</a>
-    </div>
-</aside>
+<!-- Shared sidebar injected by sidebar.js -->
 
 <div class="main-wrapper">
     <nav class="navbar">
@@ -45,7 +26,7 @@
                 <input type="text" id="search-transaction" placeholder="Buscar detalle o categoría...">
                 <div class="date-filters">
                     <input type="date" id="filter-date-from" title="Desde">
-                    <input type="date" id="filter-date-to" title="Hasta">
+                    <input type="date" id="filter-date-to"   title="Hasta">
                 </div>
                 <select id="filter-type">
                     <option value="all">Todos</option>
@@ -112,6 +93,7 @@
 
 <script src="js/utils.js"></script>
 <script src="js/supabase-client.js"></script>
+<script src="js/sidebar.js"></script>
 <script src="js/ui-controller.js"></script>
 <script src="js/history.js"></script>
 </body>
