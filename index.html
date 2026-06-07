@@ -10,33 +10,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
+<body data-page="dashboard">
 
-<!-- Sidebar -->
-<aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <h1 class="logo">Finanzas<span>Pro</span></h1>
-        <button id="close-sidebar" class="btn-icon mobile-only"><i class="fas fa-times"></i></button>
-    </div>
-    <nav class="sidebar-nav">
-        <ul>
-            <li><a href="index.html" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-            <li><a href="history.html"><i class="fas fa-history"></i> Historial</a></li>
-            <li><a href="recurring.html"><i class="fas fa-redo"></i> Recurrentes</a></li>
-        </ul>
-    </nav>
-    <div class="sidebar-footer">
-        <button id="theme-toggle" class="btn-theme"><i class="fas fa-moon"></i> <span>Modo Oscuro</span></button>
-        <button id="btn-logout" class="btn-theme" style="background-color: var(--expense-color); opacity: 0.9;">
-            <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
-        </button>
-        <button id="btn-add-recurring-sidebar" class="btn-primary-small">
-            <i class="fas fa-plus-circle"></i> Suscripciones/Cuotas
-        </button>
-    </div>
-</aside>
+<!-- Shared sidebar injected by sidebar.js -->
 
-<!-- Main Content -->
 <div class="main-wrapper">
     <nav class="navbar">
         <div class="nav-container">
@@ -72,7 +49,7 @@
                 <h3>Presupuesto Mensual</h3>
                 <div class="budget-input-group">
                     <input type="number" id="budget-amount" placeholder="Ingresá un monto..." min="0" step="100">
-                    <button id="btn-save-budget" class="btn-small">Guardar</button>
+                    <button id="btn-save-budget" class="btn-small"><i class="fas fa-save"></i> Guardar</button>
                 </div>
             </div>
             <div class="budget-progress-container">
@@ -83,15 +60,15 @@
 
         <section class="stats-grid">
             <div class="stat-card income">
-                <div class="stat-info"><span>Ingresos</span><h3 id="total-income">$0.00</h3></div>
+                <div class="stat-info"><span>Ingresos</span><h3 id="total-income">0,00</h3></div>
                 <i class="fas fa-arrow-up"></i>
             </div>
             <div class="stat-card expense">
-                <div class="stat-info"><span>Egresos</span><h3 id="total-expense">$0.00</h3></div>
+                <div class="stat-info"><span>Egresos</span><h3 id="total-expense">0,00</h3></div>
                 <i class="fas fa-arrow-down"></i>
             </div>
             <div class="stat-card balance">
-                <div class="stat-info"><span>Balance</span><h3 id="total-balance">$0.00</h3></div>
+                <div class="stat-info"><span>Balance</span><h3 id="total-balance">0,00</h3></div>
                 <i class="fas fa-wallet"></i>
             </div>
         </section>
@@ -195,6 +172,7 @@
 
 <script src="js/utils.js"></script>
 <script src="js/supabase-client.js"></script>
+<script src="js/sidebar.js"></script>
 <script src="js/ui-controller.js"></script>
 <script src="js/index.js"></script>
 </body>
