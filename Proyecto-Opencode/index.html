@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanzas Pro - Dashboard</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h1 class="logo">Finanzas<span>Pro</span></h1>
+            <button id="close-sidebar" class="btn-icon mobile-only"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="index.html" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                <li><a href="history.html"><i class="fas fa-history"></i> Historial</a></li>
+                <li><a href="recurring.html"><i class="fas fa-redo"></i> Recurrentes</a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button id="theme-toggle" class="btn-theme">
+                <i class="fas fa-moon"></i> <span>Modo Oscuro</span>
+            </button>
+            <button id="btn-logout" class="btn-theme" style="background-color: var(--expense-color); opacity: 0.8;">
+                <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
+            </button>
+            <button id="btn-add-recurring-sidebar" class="btn-primary">
+                <i class="fas fa-plus-circle"></i> Suscripciones/Cuotas
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <nav class="navbar">
+            <div class="nav-container">
+                <button id="open-sidebar" class="btn-icon"><i class="fas fa-bars"></i></button>
+                
+                <div class="nav-right">
+                    <div class="dropdown">
+                        <button class="dropdown-toggle">
+                            Suscripciones/Cuotas <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu" id="recurring-dropdown">
+                            <div class="dropdown-content">
+                                <!-- Dynamic content -->
+                                <p class="empty-msg">No hay suscripciones</p>
+                            </div>
+                            <div class="dropdown-footer">
+                                <a href="#" id="manage-recurring">Gestionar todo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="container">
+        <header class="dashboard-header">
+            <h2>Resumen Financiero</h2>
+            <div class="filter-group">
+                <button id="btn-export-json" class="btn-small" title="Exportar datos">
+                    <i class="fas fa-download"></i> Exportar
+                </button>
+                <select id="period-filter">
+                    <option value="current">Mes Actual</option>
+                    <option value="custom">Otro Mes</option>
+                    <option value="annual">Anual</option>
+                </select>
+                <input type="month" id="month-picker" class="hidden">
+            </div>
+        </header>
+
+        <section class="budget-section">
+            <div class="budget-info">
+                <h3>Presupuesto Mensual</h3>
+                <div class="budget-input-group">
+                    <input type="number" id="budget-amount" placeholder="Seta presupuesto...">
+                    <button id="btn-save-budget" class="btn-small">Guardar</button>
+                </div>
+            </div>
+            <div class="budget-progress-container">
+                <div class="progress-bar">
+                    <div id="budget-progress-fill" class="progress-fill"></div>
+                </div>
+                <span id="budget-percentage">0% utilizado</span>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <div class="stat-card income">
+                <div class="stat-info">
+                    <span>Ingresos</span>
+                    <h3 id="total-income">$0.00</h3>
+                </div>
+                <i class="fas fa-arrow-up"></i>
+            </div>
+            <div class="stat-card expense">
+                <div class="stat-info">
+                    <span>Egresos</span>
+                    <h3 id="total-expense">$0.00</h3>
+                </div>
+                <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="stat-card balance">
+                <div class="stat-info">
+                    <span>Balance</span>
+                    <h3 id="total-balance">$0.00</h3>
+                </div>
+                <i class="fas fa-wallet"></i>
+            </div>
+        </section>
+
+        <section class="charts-grid">
+            <div class="chart-container">
+                <h3>Distribución de Gastos</h3>
+                <canvas id="expenseChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Evolución Mensual</h3>
+                <canvas id="evolutionChart"></canvas>
+            </div>
+        </section>
+
+        <div class="actions">
+            <button id="btn-add-transaction" class="btn-primary">
+                <i class="fas fa-plus"></i> Agregar Movimiento
+            </button>
+        </div>
+
+        <section class="recent-activity">
+            <h3>Movimientos Recientes</h3>
+            <div id="recent-list" class="transaction-list">
+                <!-- Dynamic content -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for adding transaction -->
+    <div id="modal-transaction" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Nuevo Movimiento</h3>
+            <form id="transaction-form">
+                <div class="form-group">
+                    <label for="type">Tipo</label>
+                    <select id="type" required>
+                        <option value="income">Ingreso</option>
+                        <option value="expense">Egreso</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="category">Categoría</label>
+                    <select id="category" required>
+                        <option value="" disabled selected>Seleccione tipo primero</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Monto</label>
+                    <input type="number" id="amount" step="0.01" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label for="date">Fecha</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="detail">Detalle</label>
+                    <input type="text" id="detail" placeholder="Ej. Supermercado" required>
+                </div>
+                <button type="submit" class="btn-submit">Guardar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for adding Recurring Payment -->
+    <div id="modal-recurring" class="modal">
+        <div class="modal-content">
+            <span class="close-modal-rec">&times;</span>
+            <h3>Nueva Suscripción / Cuota</h3>
+            <form id="recurring-form">
+                <div class="form-group">
+                    <label for="rec-name">Nombre</label>
+                    <input type="text" id="rec-name" placeholder="Ej. Spotify, Gym" required>
+                </div>
+                <div class="form-group">
+                    <label for="rec-amount">Monto</label>
+                    <input type="number" id="rec-amount" step="0.01" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label for="rec-type">Tipo de Pago</label>
+                    <select id="rec-type" required>
+                        <option value="subscription">Suscripción (Mensual recurrente)</option>
+                        <option value="quota">Cuota (Número limitado de pagos)</option>
+                    </select>
+                </div>
+                <div class="form-group hidden" id="quota-count-group">
+                    <label for="rec-quotas">Número de Cuotas</label>
+                    <input type="number" id="rec-quotas" min="1" placeholder="Ej. 12">
+                </div>
+                <div class="form-group">
+                    <label for="rec-start-date">Fecha de Inicio</label>
+                    <input type="date" id="rec-start-date" required>
+                </div>
+                <button type="submit" class="btn-submit">Guardar</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui-controller.js"></script>
+    <script src="js/index.js"></script>
+</body>
+</html>

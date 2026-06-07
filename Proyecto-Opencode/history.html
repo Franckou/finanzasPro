@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanzas Pro - Historial</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h1 class="logo">Finanzas<span>Pro</span></h1>
+            <button id="close-sidebar" class="btn-icon mobile-only"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="index.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                <li><a href="history.html" class="active"><i class="fas fa-history"></i> Historial</a></li>
+                <li><a href="recurring.html"><i class="fas fa-redo"></i> Recurrentes</a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button id="theme-toggle" class="btn-theme">
+                <i class="fas fa-moon"></i> <span>Modo Oscuro</span>
+            </button>
+            <button id="btn-logout" class="btn-theme" style="background-color: var(--expense-color); opacity: 0.8;">
+                <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
+            </button>
+            <a href="recurring.html" class="btn-primary-small" style="text-decoration: none;">
+                <i class="fas fa-plus-circle"></i> Suscripciones/Cuotas
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <nav class="navbar">
+            <div class="nav-container">
+                <button id="open-sidebar" class="btn-icon"><i class="fas fa-bars"></i></button>
+                
+                <div class="nav-right">
+                    <div class="dropdown">
+                        <button class="dropdown-toggle">
+                            Suscripciones/Cuotas <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu" id="recurring-dropdown">
+                            <div class="dropdown-content">
+                                <!-- Dynamic content -->
+                                <p class="empty-msg">No hay suscripciones</p>
+                            </div>
+                            <div class="dropdown-footer">
+                                <a href="#" id="manage-recurring">Gestionar todo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="container">
+        <header class="history-header">
+            <h2>Historial Completo</h2>
+            <div class="filters-container">
+                <input type="text" id="search-transaction" placeholder="Buscar detalle...">
+                <div class="date-filters">
+                    <input type="date" id="filter-date-from" title="Desde">
+                    <input type="date" id="filter-date-to" title="Hasta">
+                </div>
+                <select id="filter-type">
+                    <option value="all">Todos los tipos</option>
+                    <option value="income">Ingresos</option>
+                    <option value="expense">Egresos</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="table-container">
+            <table class="finance-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Detalle</th>
+                        <th>Categoría</th>
+                        <th>Tipo</th>
+                        <th>Monto</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body">
+                    <!-- Dynamic content -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Modal for editing transaction -->
+    <div id="modal-edit" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Editar Movimiento</h3>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label for="edit-type">Tipo</label>
+                    <select id="edit-type" required>
+                        <option value="income">Ingreso</option>
+                        <option value="expense">Egreso</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-category">Categoría</label>
+                    <select id="edit-category" required>
+                        <option value="" disabled selected>Seleccione tipo primero</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-amount">Monto</label>
+                    <input type="number" id="edit-amount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-date">Fecha</label>
+                    <input type="date" id="edit-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-detail">Detalle</label>
+                    <input type="text" id="edit-detail" required>
+                </div>
+                <button type="submit" class="btn-submit">Actualizar</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/ui-controller.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/history.js"></script>
+</body>
+</html>

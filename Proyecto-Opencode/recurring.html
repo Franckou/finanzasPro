@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanzas Pro - Suscripciones y Cuotas</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h1 class="logo">Finanzas<span>Pro</span></h1>
+            <button id="close-sidebar" class="btn-icon mobile-only"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="index.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                <li><a href="history.html"><i class="fas fa-history"></i> Historial</a></li>
+                <li><a href="recurring.html" class="active"><i class="fas fa-redo"></i> Recurrentes</a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button id="theme-toggle" class="btn-theme">
+                <i class="fas fa-moon"></i> <span>Modo Oscuro</span>
+            </button>
+            <button id="btn-logout" class="btn-theme" style="background-color: var(--expense-color); opacity: 0.8;">
+                <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
+            </button>
+            <button id="btn-add-recurring-sidebar" class="btn-primary-small">
+                <i class="fas fa-plus-circle"></i> Suscripciones/Cuotas
+            </button>
+        </div>
+    </aside>
+
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <nav class="navbar">
+            <div class="nav-container">
+                <button id="open-sidebar" class="btn-icon"><i class="fas fa-bars"></i></button>
+                
+                <div class="nav-right">
+                    <div class="dropdown">
+                        <button class="dropdown-toggle">
+                            Suscripciones/Cuotas <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu" id="recurring-dropdown">
+                            <div class="dropdown-content">
+                                <!-- Dynamic content -->
+                            </div>
+                            <div class="dropdown-footer">
+                                <a href="recurring.html" id="manage-recurring">Gestionar todo</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="container">
+            <header class="dashboard-header">
+                <h2>Gestión de Pagos Recurrentes</h2>
+                <button id="btn-add-recurring" class="btn-primary">
+                    <i class="fas fa-plus"></i> Nueva Suscripción/Cuota
+                </button>
+            </header>
+
+            <div class="table-container">
+                <table class="finance-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Monto</th>
+                            <th>Tipo</th>
+                            <th>Inicio</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recurring-body">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for adding/editing Recurring Payment -->
+    <div id="modal-recurring" class="modal">
+        <div class="modal-content">
+            <span class="close-modal-rec">&times;</span>
+            <h3 id="modal-title">Nueva Suscripción / Cuota</h3>
+            <form id="recurring-form">
+                <input type="hidden" id="rec-id">
+                <div class="form-group">
+                    <label for="rec-name">Nombre</label>
+                    <input type="text" id="rec-name" placeholder="Ej. Spotify, Gym" required>
+                </div>
+                <div class="form-group">
+                    <label for="rec-amount">Monto</label>
+                    <input type="number" id="rec-amount" step="0.01" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label for="rec-type">Tipo de Pago</label>
+                    <select id="rec-type" required>
+                        <option value="subscription">Suscripción (Mensual recurrente)</option>
+                        <option value="quota">Cuota (Número limitado de pagos)</option>
+                    </select>
+                </div>
+                <div class="form-group hidden" id="quota-count-group">
+                    <label for="rec-quotas">Número de Cuotas</label>
+                    <input type="number" id="rec-quotas" min="1" placeholder="Ej. 12">
+                </div>
+                <div class="form-group">
+                    <label for="rec-start-date">Fecha de Inicio</label>
+                    <input type="date" id="rec-start-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="rec-active">Estado</label>
+                    <select id="rec-active">
+                        <option value="true">Activo</option>
+                        <option value="false">Inactivo</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-submit">Guardar</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/ui-controller.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/recurring.js"></script>
+</body>
+</html>
