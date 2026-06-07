@@ -1,7 +1,12 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    const updateDashboard = async () =>{
+      console.log("Dashboard actualizado")  
+    };
     await Auth.protect();
     UIController.applyTheme(AppDB.getTheme());
 
+    await updateDashboard();
+    
     let expenseChart = null;
     let evolutionChart = null;
 
