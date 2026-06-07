@@ -179,7 +179,7 @@ body { background-color: var(--bg-color); color: var(--text-main); transition: v
 
 /* ── Main wrapper & container ─────────────────────────────────────────────── */
 .main-wrapper { margin-left: var(--sidebar-width); min-height: 100vh; }
-.container { padding: 2rem; max-width: 100vw; }
+.container { padding: 2rem; max-width: auto; }
 
 /* ── Dashboard header ─────────────────────────────────────────────────────── */
 .dashboard-header, .history-header {
