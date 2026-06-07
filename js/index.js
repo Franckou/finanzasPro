@@ -86,8 +86,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     await Auth.protect();
     UIController.applyTheme(AppDB.getTheme());
-
-    await updateDashboard();
     
     let expenseChart = null;
     let evolutionChart = null;
