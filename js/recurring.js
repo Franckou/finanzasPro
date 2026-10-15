@@ -7,126 +7,157 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     document.getElementById('btn-logout')?.addEventListener('click', () => Auth.logout());
 
-    // Attach calculators
-    UI.attachCalculator('edit-amount');
+    // Attach calculator to amount input if UI helper exists
+    if (typeof UI !== 'undefined' && UI.attachCalculator) {
+        UI.attachCalculator('rec-amount');
+    }
 
-    // ── Category helper ───────────────────────────────────────────────────────
-    const populateEditCategories = (selectedCat = null) => {
-        const typeEl = document.getElementById('edit-type');
-        const catEl  = document.getElementById('edit-category');
-        if (!typeEl || !catEl) return;
-        catEl.innerHTML = AppDB.getCategories(typeEl.value)
-            .map(c => `<option value="${c}" ${c === selectedCat ? 'selected' : ''}>${c}</option>`).join('');
+    const body = document.getElementById('recurring-body');
+    const modal = document.getElementById('modal-recurring');
+    const openBtn = document.getElementById('btn-add-recurring');
+    const closeBtn = document.getElementById('close-modal-rec');
+    const form = document.getElementById('recurring-form');
+    const quotaGroup = document.getElementById('quota-count-group');
+    const typeEl = document.getElementById('rec-type');
+
+    // Helpers to safely get elements inside modal
+    const $ = id => document.getElementById(id);
+
+    const showModal = (mode = 'new', item = null) => {
+        $('modal-title') && ($('modal-title').textContent = mode === 'new' ? 'Nueva Suscripción / Cuota' : 'Editar Suscripción / Cuota');
+        $('rec-id').value = item?.id || '';
+        $('rec-name').value = item?.name || '';
+        $('rec-amount').value = item?.amount ?? '';
+        $('rec-type').value = item?.type || 'subscription';
+        $('rec-quotas').value = item?.quotas ?? '';
+        // start_date may be ISO or date-only
+        if (item?.start_date) {
+            $('rec-start-date').value = item.start_date.split('T')[0];
+        } else {
+            $('rec-start-date').value = '';
+        }
+        if ($('rec-active')) {
+            $('rec-active').value = item?.active ? 'true' : 'false';
+        }
+        // Show/hide quotas input
+        if (quotaGroup) quotaGroup.classList.toggle('hidden', $('rec-type').value !== 'quota');
+        modal?.classList.add('show');
     };
-    document.getElementById('edit-type')?.addEventListener('change', () => populateEditCategories());
 
-    // ── Modal ─────────────────────────────────────────────────────────────────
-    const modalEdit = document.getElementById('modal-edit');
-    document.getElementById('close-modal-edit')?.addEventListener('click', () => modalEdit.classList.remove('show'));
-    window.addEventListener('click', e => { if (e.target === modalEdit) modalEdit.classList.remove('show'); });
+    const closeModal = () => modal?.classList.remove('show');
 
-    // ── Data ──────────────────────────────────────────────────────────────────
-    let allTransactions = [];
+    openBtn?.addEventListener('click', () => showModal('new'));
+    closeBtn?.addEventListener('click', closeModal);
+    window.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 
-    const renderHistory = () => {
-        const historyBody = document.getElementById('history-body');
-        if (!historyBody) return;
+    typeEl?.addEventListener('change', () => {
+        if (!quotaGroup) return;
+        quotaGroup.classList.toggle('hidden', typeEl.value !== 'quota');
+    });
 
-        const search     = document.getElementById('search-transaction')?.value.toLowerCase() || '';
-        const dateFrom   = document.getElementById('filter-date-from')?.value || '';
-        const dateTo     = document.getElementById('filter-date-to')?.value   || '';
-        const typeFilter = document.getElementById('filter-type')?.value      || 'all';
+    let all = [];
 
-        const filtered = allTransactions.filter(t => {
-            const matchText = t.detail.toLowerCase().includes(search) || (t.category||'').toLowerCase().includes(search);
-            const matchType = typeFilter === 'all' || t.type === typeFilter;
-            const matchFrom = !dateFrom || t.date >= dateFrom;
-            const matchTo   = !dateTo   || t.date <= dateTo;
-            return matchText && matchType && matchFrom && matchTo;
-        }).sort((a, b) => new Date(b.date) - new Date(a.date));
+    const formatDate = (d) => {
+        if (!d) return '';
+        try {
+            return d.split ? d.split('T')[0] : new Date(d).toISOString().split('T')[0];
+        } catch {
+            return String(d);
+        }
+    };
 
-        if (!filtered.length) {
-            historyBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem;font-style:italic;">No se encontraron movimientos</td></tr>`;
+    const render = () => {
+        if (!body) return;
+        if (!all.length) {
+            body.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem;font-style:italic;">No hay pagos recurrentes</td></tr>`;
             return;
         }
 
-        historyBody.innerHTML = filtered.map(t => `
+        body.innerHTML = all.map(r => `
             <tr>
-                <td>${t.date}</td>
-                <td>${t.detail}</td>
-                <td>${t.category || 'General'}</td>
-                <td><span class="badge ${t.type === 'income' ? 'badge-income' : 'badge-expense'}">
-                    ${t.type === 'income' ? 'Ingreso' : 'Egreso'}
-                </span></td>
-                <td class="item-amount ${t.type === 'income' ? 'amount-income' : 'amount-expense'}">
-                    ${UI.formatMoney(t.amount)}
-                </td>
+                <td>${r.name}</td>
+                <td class="item-amount">${UI?.formatMoney ? UI.formatMoney(r.amount) : (r.amount ?? '')}</td>
+                <td>${r.type === 'subscription' ? 'Suscripción' : 'Cuota'}</td>
+                <td>${formatDate(r.start_date)}</td>
+                <td>${r.active ? '<span class="badge badge-income">Activo</span>' : '<span class="badge badge-expense">Inactivo</span>'}</td>
                 <td>
-                    <button class="btn-edit"   onclick="openEditModal('${t.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn-delete" onclick="deleteTransaction('${t.id}')"><i class="fas fa-trash"></i></button>
+                    <button class="btn-edit" onclick="openRecurringEdit('${r.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn-delete" onclick="deleteRecurringItem('${r.id}')"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>
         `).join('');
     };
 
-    const loadTransactions = async () => {
-        const body = document.getElementById('history-body');
-        UI.showLoading(body, 'Cargando movimientos...');
+    window.openRecurringEdit = (id) => {
+        const item = all.find(x => x.id === id);
+        if (!item) return;
+        showModal('edit', item);
+    };
+
+    window.deleteRecurringItem = async (id) => {
+        if (!await UI.confirm('¿Seguro querés eliminar este pago recurrente?')) return;
         try {
-            allTransactions = await AppDB.getTransactions();
-            renderHistory();
+            await AppDB.deleteRecurring(id);
+            all = all.filter(x => x.id !== id);
+            render();
+            await UI.alert('El pago recurrente fue eliminado');
         } catch (err) {
-            UI.showError(body, 'Error al cargar los movimientos');
+            await UI.alert('Error al eliminar: ' + (err?.message || err));
         }
     };
 
-    // ── CRUD ──────────────────────────────────────────────────────────────────
-    window.deleteTransaction = async (id) => {
-        if (!await UI.confirm('¿Estás seguro de que querés eliminar este movimiento?')) return;
+    const load = async () => {
+        if (!body) return;
+        UI.showLoading?.(body, 'Cargando recurrentes...');
         try {
-            await AppDB.deleteTransaction(id);
-            allTransactions = allTransactions.filter(t => t.id !== id);
-            renderHistory();
-        } catch (err) { await UI.alert('Error al eliminar: ' + err.message); }
+            all = await AppDB.getRecurring();
+            render();
+        } catch (err) {
+            UI.showError?.(body, 'Error al cargar recurrentes');
+            console.error('getRecurring error', err);
+        }
     };
 
-    window.openEditModal = (id) => {
-        const t = allTransactions.find(t => t.id === id);
-        if (!t) return;
-        document.getElementById('edit-id').value     = t.id;
-        document.getElementById('edit-type').value   = t.type;
-        populateEditCategories(t.category);
-        document.getElementById('edit-amount').value = t.amount;
-        document.getElementById('edit-date').value   = t.date;
-        document.getElementById('edit-detail').value = t.detail;
-        modalEdit.classList.add('show');
-    };
-
-    document.getElementById('edit-form')?.addEventListener('submit', async e => {
+    form?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const id      = document.getElementById('edit-id').value;
-        const updated = {
-            type:     document.getElementById('edit-type').value,
-            category: document.getElementById('edit-category').value,
-            amount:   document.getElementById('edit-amount').value,
-            date:     document.getElementById('edit-date').value,
-            detail:   document.getElementById('edit-detail').value,
+        const id = $('rec-id').value;
+        const payload = {
+            name: $('rec-name').value.trim(),
+            amount: $('rec-amount').value,
+            type: $('rec-type').value,
+            quotas: $('rec-quotas').value ? parseInt($('rec-quotas').value, 10) : null,
+            startDate: $('rec-start-date').value,
+            active: $('rec-active') ? $('rec-active').value === 'true' : true
         };
+
+        // Basic validation
+        if (!payload.name) return UI.alert('El nombre es requerido');
+        if (!payload.amount || isNaN(parseFloat(payload.amount))) return UI.alert('Monto inválido');
+        if (!payload.startDate) return UI.alert('Fecha de inicio requerida');
+
         try {
-            await AppDB.updateTransaction(id, updated);
-            const idx = allTransactions.findIndex(t => t.id === id);
-            if (idx !== -1) allTransactions[idx] = { ...allTransactions[idx], ...updated, amount: parseFloat(updated.amount) };
-            modalEdit.classList.remove('show');
-            renderHistory();
-            await UI.alert('Movimiento actualizado correctamente');
-        } catch (err) { await UI.alert('Error al actualizar: ' + err.message); }
+            if (id) {
+                await AppDB.updateRecurring(id, payload);
+                const idx = all.findIndex(x => x.id === id);
+                if (idx !== -1) {
+                    all[idx] = { ...all[idx], ...payload, amount: parseFloat(payload.amount), start_date: payload.startDate, quotas: payload.quotas, active: payload.active };
+                }
+                await UI.alert('Pago recurrente actualizado');
+            } else {
+                const created = await AppDB.saveRecurring(payload);
+                // Ensure consistent shape
+                created.amount = parseFloat(created.amount);
+                all.unshift(created);
+                await UI.alert('Pago recurrente creado');
+            }
+            closeModal();
+            render();
+        } catch (err) {
+            await UI.alert('Error al guardar: ' + (err?.message || err));
+            console.error('save/update recurring error', err);
+        }
     });
 
-    // ── Filters ───────────────────────────────────────────────────────────────
-    document.getElementById('search-transaction')?.addEventListener('input', renderHistory);
-    document.getElementById('filter-date-from')?.addEventListener('change', renderHistory);
-    document.getElementById('filter-date-to')?.addEventListener('change', renderHistory);
-    document.getElementById('filter-type')?.addEventListener('change', renderHistory);
-
-    await loadTransactions();
+    // Inicial load
+    await load();
 });
